@@ -8,7 +8,7 @@ Cloudflare has great SDKs for running AI Agents. Since I had no idea how they wo
 
 - Create `.dev.vars` file in the `workers/client` directory.
 
-- Add `OPENAPI_KEY` to the `.dev.vars` file. See `.dev.vars.example` for reference.
+- Add `OPENAPI_KEY` to the `.dev.vars` file.
 
 - Install dependencies
 
