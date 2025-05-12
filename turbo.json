@@ -1,0 +1,22 @@
+{
+  "$schema": "https://turborepo.com/schema.json",
+  "ui": "tui",
+  "tasks": {
+    "client#dev": {
+      "with": ["server#dev"],
+      "persistent": true,
+      "cache": false
+    },
+    "server#dev": {
+      "persistent": true,
+      "dependsOn": [],
+      "cache": false
+    },
+    "app#dev": {
+      "dependsOn": [],
+      "cache": false,
+      "persistent": true
+    },
+    "typegen": {}
+  }
+}

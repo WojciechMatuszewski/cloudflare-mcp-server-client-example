@@ -1,50 +1,69 @@
-# Building a Remote MCP Server on Cloudflare (Without Auth)
+# Remove MCP Client & Server on Cloudflare
 
-This example allows you to deploy a remote MCP server that doesn't require authentication on Cloudflare Workers. 
+Cloudflare has great SDKs for running AI Agents. Since I had no idea how they work (this is mostly true now as well), I decided to play around with the code and build a remove MCP server and client to learn.
 
-## Get started: 
+## Running the application
 
-[![Deploy to Workers](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/cloudflare/ai/tree/main/demos/remote-mcp-authless)
+- Install [wrangler-cli](https://developers.cloudflare.com/workers/wrangler/install-and-update/).
 
-This will deploy your MCP server to a URL like: `remote-mcp-server-authless.<your-account>.workers.dev/sse`
+- Create `.dev.vars` file in the `workers/client` directory.
 
-Alternatively, you can use the command line below to get the remote MCP Server created on your local machine:
+- Add `OPENAPI_KEY` to the `.dev.vars` file. See `.dev.vars.example` for reference.
+
+- Install dependencies
+
 ```bash
-npm create cloudflare@latest -- my-mcp-server --template=cloudflare/ai/demos/remote-mcp-authless
+pnpm i
 ```
 
-## Customizing your MCP Server
+- Run the application
 
-To add your own [tools](https://developers.cloudflare.com/agents/model-context-protocol/tools/) to the MCP server, define each tool inside the `init()` method of `src/index.ts` using `this.server.tool(...)`. 
-
-## Connect to Cloudflare AI Playground
-
-You can connect to your MCP server from the Cloudflare AI Playground, which is a remote MCP client:
-
-1. Go to https://playground.ai.cloudflare.com/
-2. Enter your deployed MCP server URL (`remote-mcp-server-authless.<your-account>.workers.dev/sse`)
-3. You can now use your MCP tools directly from the playground!
-
-## Connect Claude Desktop to your MCP server
-
-You can also connect to your remote MCP server from local MCP clients, by using the [mcp-remote proxy](https://www.npmjs.com/package/mcp-remote). 
-
-To connect to your MCP server from Claude Desktop, follow [Anthropic's Quickstart](https://modelcontextprotocol.io/quickstart/user) and within Claude Desktop go to Settings > Developer > Edit Config.
-
-Update with this configuration:
-
-```json
-{
-  "mcpServers": {
-    "calculator": {
-      "command": "npx",
-      "args": [
-        "mcp-remote",
-        "http://localhost:8787/sse"  // or remote-mcp-server-authless.your-account.workers.dev/sse
-      ]
-    }
-  }
-}
+```bash
+pnpm run dev
 ```
 
-Restart Claude and you should see the tools become available. 
+- Open the application in your browser: `http://localhost:3000`
+
+## Learning
+
+- The `McpAgent` automatically handles state via _durable objects_.
+
+  - It feels _so magical_! I love how easy it is to set up, but I also wonder what is the cost of this abstraction.
+
+    - The data layer is quite hidden, and while you can access it via `this.sql` function, there is no type-safety when writing the query.
+
+  - Documentation mentions that the `McpAgent` inherits the data-isolation characteristics of the `Agent` class – that each agent has it's own, private, separate database. [Link to the documentation](https://developers.cloudflare.com/agents/api-reference/store-and-sync-state/#sql-api)
+
+    - [According to the documentation](https://developers.cloudflare.com/agents/model-context-protocol/mcp-agent-api/#state-synchronization-apis), **state is destroyed when user disconnects**. Makes sense!
+
+- I could not find any mention in the documentation about this, but it seems like the `McpAgent` is an abstraction on top of the `McpServer` class.
+
+- The `/mcp` path exposed by the server handles the _Streamable HTTP_ transport mentioned in the documentation here.
+
+- The "MCP playground" works by creating a _proxy_ MCP client that the frontend application communicates with.
+
+  - The request are never made directly from the frontend application to your server. They always go through the proxy.
+
+- The `McpAgent` class is an abstraction over the `Agent` class that supports the _SSE_ and _Streamable HTTP_ transports.
+
+- You can create _mcp client_ by using the `MCPClientManager` class.
+
+  - **Currently, the _Streamable HTTP_ transport does not seem to be supported**.
+
+- You can add _annotations_ to the current "chat message" via `dataStream.writeMessageAnnotation`.
+
+  - This is pretty neat! I've used this to indicate that the tool call is loading.
+
+- The concept of `prompts` is pretty powerful.
+
+  - You can expose a set of pre-defined prompts to the consuming client. **Those prompts can take arguments!**
+
+- After _running_ a prompt, you have to push the return (an array of messages) into the agent messages.
+
+  - I could not find a good way to do this. I've opted to use `saveMessages` method. I'm unsure if that method is the right one.
+
+    - Why would I want to save _all_ messages only to push a couple of them into the messages array?
+
+- The `callPrompt` RPC that the `client` has is [_stringly-typed_](https://www.hanselman.com/blog/stringly-typed-vs-strongly-typed).
+
+  - I wonder if I can improve the types there somehow?
