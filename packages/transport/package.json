@@ -1,0 +1,11 @@
+{
+  "name": "transport",
+  "type": "module",
+  "scripts": {},
+  "dependencies": {
+    "@tsconfig/strictest": "2.0.5",
+    "@modelcontextprotocol/sdk": "1.11.2",
+    "agents": "0.0.84"
+  },
+  "devDependencies": {}
+}

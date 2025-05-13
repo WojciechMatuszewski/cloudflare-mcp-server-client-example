@@ -14,6 +14,7 @@
     "@modelcontextprotocol/inspector": "0.11.0",
     "@cloudflare/workers-types": "4.20250504.0",
     "wrangler": "4.14.1",
-    "@types/node": "22.15.11"
+    "@types/node": "22.15.11",
+    "@tsconfig/node23": "23.0.1"
   }
 }

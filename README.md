@@ -67,3 +67,15 @@ pnpm run dev
 - The `callPrompt` RPC that the `client` has is [_stringly-typed_](https://www.hanselman.com/blog/stringly-typed-vs-strongly-typed).
 
   - I wonder if I can improve the types there somehow?
+
+- When working on the UI, I remembered an old technique for chat windows: making sure the scroll stays at the bottom when new message is added.
+
+  - This works by **using `column-reverse` flexbox layout on the container, and then `.toReverse` on the items**.
+
+    - Now the browsers default scroll position becomes "the bottom". Since you reversed the children, they appear in regular top-to-bottom fashion.
+
+    - This approach is **not without it's drawbacks**.
+
+      - Keyboard navigation now works in reverse order unless you play around with `tabIndex`.
+
+      - The CSS styling that you have on the list and items might need to change since "top" and "bottom" directions are inverted.

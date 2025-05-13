@@ -8,9 +8,6 @@
     "typegen": "turbo typegen"
   },
   "devDependencies": {
-    "@tsconfig/node22": "22.0.1",
-    "@tsconfig/node23": "23.0.1",
-    "@tsconfig/vite-react": "3.4.0",
     "turbo": "2.5.2",
     "typescript": "5.8.3"
   },

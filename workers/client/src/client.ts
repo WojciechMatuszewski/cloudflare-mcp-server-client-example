@@ -1,10 +1,5 @@
 import { createOpenAI } from "@ai-sdk/openai";
-import type {
-  Prompt,
-  Resource,
-  Tool
-} from "@modelcontextprotocol/sdk/types.js";
-import { routeAgentRequest, unstable_callable as callable } from "agents";
+import { unstable_callable as callable, routeAgentRequest } from "agents";
 import { AIChatAgent } from "agents/ai-chat-agent";
 import { MCPClientManager } from "agents/mcp/client";
 import {
@@ -12,23 +7,12 @@ import {
   jsonSchema,
   streamText,
   tool,
-  type StreamTextOnFinishCallback,
-  Message
+  type StreamTextOnFinishCallback
 } from "ai";
 
-export type Server = {
-  url: string;
-  state: MCPClientManager["mcpConnections"][number]["connectionState"];
-};
+import type { MCPClientRunPromptPayload, MCPClientState } from "transport";
 
-export type State = {
-  servers: Record<string, Server>;
-  tools: (Tool & { serverId: string })[];
-  prompts: (Prompt & { serverId: string })[];
-  resources: (Resource & { serverId: string })[];
-};
-
-export class MyAgent extends AIChatAgent<Env, State> {
+export class MyAgent extends AIChatAgent<Env, MCPClientState> {
   initialState = {
     servers: {},
     tools: [],
@@ -112,12 +96,8 @@ export class MyAgent extends AIChatAgent<Env, State> {
   }
 
   @callable({})
-  async runPrompt(payload: {
-    name: string;
-    serverId: string;
-    arguments: Record<string, string>;
-  }) {
-    const { messages: promptMessages } = await this.mcp.getPrompt(
+  async runPrompt(payload: MCPClientRunPromptPayload) {
+    const { messages } = await this.mcp.getPrompt(
       {
         name: payload.name,
         serverId: payload.serverId,
@@ -126,19 +106,7 @@ export class MyAgent extends AIChatAgent<Env, State> {
       {}
     );
 
-    const promptMessagesWithIds = promptMessages.map(
-      (promptMessage): Message => {
-        return {
-          content: promptMessage.content.text as string,
-          id: crypto.randomUUID(),
-          role: "user",
-          createdAt: new Date()
-        };
-      }
-    );
-
-    const allMessages = this.messages.concat(promptMessagesWithIds);
-    await this.saveMessages(allMessages);
+    return messages;
   }
 }
 

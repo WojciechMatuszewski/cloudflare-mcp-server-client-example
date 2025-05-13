@@ -1,34 +1,58 @@
 "use client";
 
-import type { Prompt } from "@modelcontextprotocol/sdk/types.js";
+import {
+  Prompt,
+  PromptMessage,
+  GetPromptRequestSchema
+} from "@modelcontextprotocol/sdk/types.js";
 import { useAgentChat } from "agents/ai-react";
 import { useAgent } from "agents/react";
 import type { UIMessage } from "ai";
 import { Fragment, useId, useState } from "react";
 import { createRoot } from "react-dom/client";
+import type { MCPClientRunPromptPayload, MCPClientState } from "transport";
 import { z } from "zod";
 import "./app.css";
 
 type AgentPrompt = Prompt & { serverId: string };
 
 function Chat({ sessionId }: { sessionId: string }) {
-  const [agentState, setAgentState] = useState<{ prompts: Array<AgentPrompt> }>(
-    {
-      prompts: []
-    }
-  );
+  const [agentState, setAgentState] = useState<MCPClientState>({
+    prompts: [],
+    resources: [],
+    servers: {},
+    tools: []
+  });
 
-  const agent = useAgent({
+  const agent = useAgent<MCPClientState>({
     host: "http://localhost:3002",
     agent: "my-agent",
     id: sessionId,
     onStateUpdate(state, _source) {
-      setAgentState(state as any);
+      setAgentState(state);
     }
   });
 
-  const { messages, input, handleInputChange, handleSubmit, clearHistory } =
-    useAgentChat({ agent });
+  const {
+    messages,
+    input,
+    handleInputChange,
+    handleSubmit,
+    clearHistory,
+    append
+  } = useAgentChat({ agent });
+
+  async function handleRunPrompt(promptPayload: MCPClientRunPromptPayload) {
+    const messages = await agent.call<PromptMessage[]>("runPrompt", [
+      promptPayload
+    ]);
+
+    for (const message of messages) {
+      if (message.content.type === "text") {
+        await append({ content: message.content.text, role: message.role });
+      }
+    }
+  }
 
   const chatInputId = useId();
 
@@ -69,17 +93,17 @@ function Chat({ sessionId }: { sessionId: string }) {
       <section>
         <h2 className={"mb-2"}>Available prompts</h2>
         <PromptsList
-          onRunPrompt={(payload) => {
-            agent.call("runPrompt", [payload]);
-          }}
+          onRunPrompt={handleRunPrompt}
           prompts={agentState.prompts}
         />
       </section>
 
       <section>
         <h2 className={"mb-2"}>Messages</h2>
-        <ul className={"mt-3 max-h-[300px] overflow-y-auto"}>
-          {messages.map((message) => {
+        <ul
+          className={"mt-3 max-h-[300px] overflow-y-auto flex flex-col-reverse"}
+        >
+          {messages.toReversed().map((message) => {
             const isLoading = isLoadingAnswer(message);
 
             return (
@@ -89,7 +113,9 @@ function Chat({ sessionId }: { sessionId: string }) {
                     <div className={"loading loading-dots loading-lg"}></div>
                   </div>
                 ) : (
-                  <p className={"chat-bubble"}>{message.content}</p>
+                  <p tabIndex={0} className={"chat-bubble"}>
+                    {message.content}
+                  </p>
                 )}
               </ChatMessage>
             );
@@ -125,11 +151,7 @@ function PromptsList({
   onRunPrompt
 }: {
   prompts: AgentPrompt[];
-  onRunPrompt: (params: {
-    name: string;
-    serverId: string;
-    arguments?: Record<string, unknown>;
-  }) => void;
+  onRunPrompt: (params: MCPClientRunPromptPayload) => void;
 }) {
   const [currentPrompt, setCurrentPrompt] = useState<AgentPrompt | null>(null);
 
@@ -175,8 +197,8 @@ function PromptsList({
 
               onRunPrompt({
                 name: currentPrompt.name,
-                arguments: formValues,
-                serverId: currentPrompt?.serverId
+                serverId: currentPrompt.serverId,
+                arguments: formValues as any
               });
 
               setCurrentPrompt(null);
