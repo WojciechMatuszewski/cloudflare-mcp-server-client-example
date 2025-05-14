@@ -5,22 +5,23 @@
     "dev": "vite dev"
   },
   "dependencies": {
-    "agents": "0.0.76",
-    "zod": "3.24.4",
     "@modelcontextprotocol/sdk": "1.11.0",
+    "agents": "0.0.76",
     "ai": "4.3.15",
     "react": "19.1.0",
     "react-dom": "19.1.0",
-    "transport": "workspace:*"
+    "react-router": "7.6.0",
+    "transport": "workspace:*",
+    "zod": "3.24.4"
   },
   "devDependencies": {
     "@tailwindcss/vite": "4.1.6",
+    "@tsconfig/vite-react": "3.4.0",
     "@types/react": "19.1.2",
     "@types/react-dom": "19.1.3",
     "@vitejs/plugin-react": "4.4.1",
     "daisyui": "5.0.35",
     "tailwindcss": "4.1.6",
-    "vite": "6.3.4",
-    "@tsconfig/vite-react": "3.4.0"
+    "vite": "6.3.4"
   }
 }

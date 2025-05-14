@@ -32,7 +32,8 @@ export class MyAgent extends AIChatAgent<Env, MCPClientState> {
       servers: {
         [id]: {
           state: serverConnection.connectionState,
-          url: serverConnection.url.toString()
+          url: serverConnection.url.toString(),
+          tools: serverConnection.tools
         }
       },
       prompts: this.mcp.listPrompts(),

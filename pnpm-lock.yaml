@@ -32,6 +32,9 @@ importers:
       react-dom:
         specifier: 19.1.0
         version: 19.1.0(react@19.1.0)
+      react-router:
+        specifier: 7.6.0
+        version: 7.6.0(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       transport:
         specifier: workspace:*
         version: link:../packages/transport
@@ -86,10 +89,10 @@ importers:
         version: 1.11.0
       agents:
         specifier: 0.0.84
-        version: 0.0.84(@cloudflare/workers-types@4.20250504.0)(react@18.3.1)
+        version: 0.0.84(@cloudflare/workers-types@4.20250504.0)(react@19.1.0)
       ai:
         specifier: 4.3.15
-        version: 4.3.15(react@18.3.1)(zod@3.24.4)
+        version: 4.3.15(react@19.1.0)(zod@3.24.4)
       zod:
         specifier: 3.24.4
         version: 3.24.4
@@ -120,7 +123,7 @@ importers:
         version: 1.11.0
       agents:
         specifier: 0.0.76
-        version: 0.0.76(@cloudflare/workers-types@4.20250504.0)(react@19.1.0)
+        version: 0.0.76(@cloudflare/workers-types@4.20250504.0)(react@18.3.1)
       zod:
         specifier: 3.24.4
         version: 3.24.4
@@ -1424,6 +1427,10 @@ packages:
     resolution: {integrity: sha512-yki5XnKuf750l50uGTllt6kKILY4nQ1eNIQatoXEByZ5dWgnKqbnqmTrBE5B4N7lrMJKQ2ytWMiTO2o0v6Ew/w==}
     engines: {node: '>= 0.6'}
 
+  cookie@1.0.2:
+    resolution: {integrity: sha512-9Kr/j4O16ISv8zBBhJoi4bXOYNTkFLOqSL3UDB0njXxCXNezjeyVrJyGOWtgfs/q2km1gwBcfH8q1yEGoMYunA==}
+    engines: {node: '>=18'}
+
   cors@2.8.5:
     resolution: {integrity: sha512-KIHbLJqu73RGr/hnbrO9uBeixNGuvSQjul/jdFvS/KFSIH1hWVd1ng7zOHx+YrEfInLG7q4n6GHQ9cDtxv/P6g==}
     engines: {node: '>= 0.10'}
@@ -1990,6 +1997,16 @@ packages:
       '@types/react':
         optional: true
 
+  react-router@7.6.0:
+    resolution: {integrity: sha512-GGufuHIVCJDbnIAXP3P9Sxzq3UUsddG3rrI3ut1q6m0FI6vxVBF3JoPQ38+W/blslLH4a5Yutp8drkEpXoddGQ==}
+    engines: {node: '>=20.0.0'}
+    peerDependencies:
+      react: '>=18'
+      react-dom: '>=18'
+    peerDependenciesMeta:
+      react-dom:
+        optional: true
+
   react-simple-code-editor@0.14.1:
     resolution: {integrity: sha512-BR5DtNRy+AswWJECyA17qhUDvrrCZ6zXOCfkQY5zSmb96BVUbpVAv03WpcjcwtCwiLbIANx3gebHOcXYn1EHow==}
     peerDependencies:
@@ -2064,6 +2081,9 @@ packages:
   serve-static@2.2.0:
     resolution: {integrity: sha512-61g9pCh0Vnh7IutZjtLGGpTA355+OPn2TyDv/6ivP2h/AdAVX9azsoxmg2/M6nZeQZNYBEwIcsne1mJd9oQItQ==}
     engines: {node: '>= 18'}
+
+  set-cookie-parser@2.7.1:
+    resolution: {integrity: sha512-IOc8uWeOZgnb3ptbCURJWNjWUPcO3ZnTTdzsurqERrP6nPyv+paC55vJM0LpOlT2ne+Ix+9+CRG1MNLlyZ4GjQ==}
 
   setprototypeof@1.2.0:
     resolution: {integrity: sha512-E5LDX7Wrp85Kil5bhZv46j8jOeboKq5JMmYM3gVGdGH8xFpPWXUMsNrlODCrkoxMEeNi/XZIwuRvY4XNwYMJpw==}
@@ -3488,6 +3508,20 @@ snapshots:
 
   acorn@8.14.0: {}
 
+  agents@0.0.76(@cloudflare/workers-types@4.20250504.0)(react@18.3.1):
+    dependencies:
+      '@modelcontextprotocol/sdk': 1.11.0
+      ai: 4.3.15(react@18.3.1)(zod@3.24.4)
+      cron-schedule: 5.0.4
+      nanoid: 5.1.5
+      partyserver: 0.0.68(@cloudflare/workers-types@4.20250504.0)
+      partysocket: 1.1.3
+      react: 18.3.1
+      zod: 3.24.4
+    transitivePeerDependencies:
+      - '@cloudflare/workers-types'
+      - supports-color
+
   agents@0.0.76(@cloudflare/workers-types@4.20250504.0)(react@19.1.0):
     dependencies:
       '@modelcontextprotocol/sdk': 1.11.0
@@ -3497,20 +3531,6 @@ snapshots:
       partyserver: 0.0.68(@cloudflare/workers-types@4.20250504.0)
       partysocket: 1.1.3
       react: 19.1.0
-      zod: 3.24.4
-    transitivePeerDependencies:
-      - '@cloudflare/workers-types'
-      - supports-color
-
-  agents@0.0.84(@cloudflare/workers-types@4.20250504.0)(react@18.3.1):
-    dependencies:
-      '@modelcontextprotocol/sdk': 1.11.2
-      ai: 4.3.15(react@18.3.1)(zod@3.24.4)
-      cron-schedule: 5.0.4
-      nanoid: 5.1.5
-      partyserver: 0.0.71(@cloudflare/workers-types@4.20250504.0)
-      partysocket: 1.1.4
-      react: 18.3.1
       zod: 3.24.4
     transitivePeerDependencies:
       - '@cloudflare/workers-types'
@@ -3694,6 +3714,8 @@ snapshots:
   cookie-signature@1.2.2: {}
 
   cookie@0.7.2: {}
+
+  cookie@1.0.2: {}
 
   cors@2.8.5:
     dependencies:
@@ -4195,6 +4217,14 @@ snapshots:
     optionalDependencies:
       '@types/react': 19.1.2
 
+  react-router@7.6.0(react-dom@19.1.0(react@19.1.0))(react@19.1.0):
+    dependencies:
+      cookie: 1.0.2
+      react: 19.1.0
+      set-cookie-parser: 2.7.1
+    optionalDependencies:
+      react-dom: 19.1.0(react@19.1.0)
+
   react-simple-code-editor@0.14.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
     dependencies:
       react: 18.3.1
@@ -4307,6 +4337,8 @@ snapshots:
       send: 1.2.0
     transitivePeerDependencies:
       - supports-color
+
+  set-cookie-parser@2.7.1: {}
 
   setprototypeof@1.2.0: {}
 

@@ -8,6 +8,7 @@ import type { MCPClientManager } from "agents/dist/mcp/client";
 export type MCPServer = {
   url: string;
   state: MCPClientManager["mcpConnections"][number]["connectionState"];
+  tools: Tool[];
 };
 
 export type MCPClientState = {
