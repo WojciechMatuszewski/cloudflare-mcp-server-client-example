@@ -5,10 +5,14 @@ import type {
 } from "@modelcontextprotocol/sdk/types.js";
 import type { MCPClientManager } from "agents/dist/mcp/client";
 
+export type MCPServerState =
+  MCPClientManager["mcpConnections"][number]["connectionState"];
+
 export type MCPServer = {
   url: string;
-  state: MCPClientManager["mcpConnections"][number]["connectionState"];
+  state: MCPServerState;
   tools: Tool[];
+  id: string;
 };
 
 export type MCPClientState = {

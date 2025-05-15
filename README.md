@@ -79,3 +79,5 @@ pnpm run dev
       - Keyboard navigation now works in reverse order unless you play around with `tabIndex`.
 
       - The CSS styling that you have on the list and items might need to change since "top" and "bottom" directions are inverted.
+
+- I could not find any way to _disconnect_ from the MCP server via the MCP client.

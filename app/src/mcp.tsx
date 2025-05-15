@@ -1,6 +1,6 @@
 import { useAgent } from "agents/react";
 import { useId, useState } from "react";
-import type { MCPClientState } from "transport";
+import type { MCPClientState, MCPServerState } from "transport";
 
 export function Mcp({ sessionId }: { sessionId: string }) {
   const [agentState, setAgentState] = useState<MCPClientState>({
@@ -19,6 +19,11 @@ export function Mcp({ sessionId }: { sessionId: string }) {
     }
   });
 
+  function handleRemoveServer({ id }: { id: string }) {
+    console.log("calling!");
+    agent.call("removeServer", [{ id }]);
+  }
+
   const serverAddressInputId = useId();
   const serversList = Object.values(agentState.servers);
 
@@ -35,6 +40,7 @@ export function Mcp({ sessionId }: { sessionId: string }) {
                 className={"input input-md w-full"}
                 type="url"
                 name={"address"}
+                required={true}
                 id={serverAddressInputId}
               />
             </div>
@@ -52,17 +58,10 @@ export function Mcp({ sessionId }: { sessionId: string }) {
                 className={"list-row bg-base-200 flex flex-col"}
                 key={server.url}
               >
-                <dl className={"grid grid-cols-[max-content_auto] gap-2"}>
-                  <div className={"grid-cols-subgrid grid"}>
-                    <dt className={"font-bold"}>Server URL</dt>
-                    <dl>{server.url}</dl>
-                  </div>
-
-                  <div className={"grid-cols-subgrid grid"}>
-                    <dt className={"font-bold"}>Connection state</dt>
-                    <dl>{server.state}</dl>
-                  </div>
-                </dl>
+                <div className={"flex flex-row items-center gap-2"}>
+                  <span>{server.url}</span>
+                  <ServerStateIndicator state={server.state} />
+                </div>
                 <ul className={"flex flex-row gap-1"}>
                   {server.tools.map((serverTool) => {
                     return (
@@ -70,7 +69,13 @@ export function Mcp({ sessionId }: { sessionId: string }) {
                     );
                   })}
                 </ul>
-                <button className={"btn btn-warning"} type="button">
+                <button
+                  onClick={() => {
+                    handleRemoveServer({ id: server.id });
+                  }}
+                  className={"btn btn-warning"}
+                  type="button"
+                >
                   Remove
                 </button>
               </li>
@@ -80,4 +85,26 @@ export function Mcp({ sessionId }: { sessionId: string }) {
       </section>
     </article>
   );
+}
+
+function ServerStateIndicator({ state }: { state: MCPServerState }) {
+  switch (state) {
+    case "authenticating": {
+      return <div className={"status status-info"} />;
+    }
+    case "connecting": {
+      return <div className={"status status-info"} />;
+    }
+    case "ready": {
+      return <div className={"status status-success"} />;
+    }
+    case "discovering": {
+      return <div className={"status status-info"} />;
+    }
+    case "failed": {
+      return <div className={"status status-error"} />;
+    }
+  }
+
+  throw new Error("Unknown status");
 }

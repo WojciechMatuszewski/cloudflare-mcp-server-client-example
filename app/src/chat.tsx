@@ -166,7 +166,8 @@ function PromptsList({
                 }}
                 type="button"
               >
-                {prompt.name}
+                <span>{prompt.name}</span>
+                <span>{prompt.serverId}</span>
               </button>
             </li>
           );

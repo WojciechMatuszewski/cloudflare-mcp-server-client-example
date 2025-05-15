@@ -33,7 +33,8 @@ export class MyAgent extends AIChatAgent<Env, MCPClientState> {
         [id]: {
           state: serverConnection.connectionState,
           url: serverConnection.url.toString(),
-          tools: serverConnection.tools
+          tools: serverConnection.tools,
+          id
         }
       },
       prompts: this.mcp.listPrompts(),
@@ -108,6 +109,16 @@ export class MyAgent extends AIChatAgent<Env, MCPClientState> {
     );
 
     return messages;
+  }
+
+  @callable({})
+  async removeServer({ id }: { id: string }) {
+    this.setState({
+      servers: {},
+      prompts: this.mcp.listPrompts(),
+      resources: this.mcp.listResources(),
+      tools: this.mcp.listTools()
+    });
   }
 }
 
