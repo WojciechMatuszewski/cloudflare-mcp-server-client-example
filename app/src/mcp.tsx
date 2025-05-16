@@ -19,29 +19,31 @@ export function Mcp({ sessionId }: { sessionId: string }) {
     }
   });
 
-  function handleRemoveServer({ id }: { id: string }) {
-    console.log("calling!");
-    agent.call("removeServer", [{ id }]);
-  }
-
-  const serverAddressInputId = useId();
+  const serverUrlInputId = useId();
   const serversList = Object.values(agentState.servers);
 
   return (
     <article>
       <section>
-        <form>
+        <form
+          onSubmit={(event) => {
+            event.preventDefault();
+            const formData = new FormData(event.currentTarget);
+            const payload = Object.fromEntries(formData.entries());
+            agent.call("addServer", [payload]);
+          }}
+        >
           <fieldset>
             <div className={"flex flex-col"}>
-              <label htmlFor={serverAddressInputId} className={"label mb-2"}>
+              <label htmlFor={serverUrlInputId} className={"label mb-1"}>
                 MCP server address
               </label>
               <input
                 className={"input input-md w-full"}
                 type="url"
-                name={"address"}
+                name={"url"}
                 required={true}
-                id={serverAddressInputId}
+                id={serverUrlInputId}
               />
             </div>
             <button className={"btn mt-4"} type="submit">
@@ -71,7 +73,7 @@ export function Mcp({ sessionId }: { sessionId: string }) {
                 </ul>
                 <button
                   onClick={() => {
-                    handleRemoveServer({ id: server.id });
+                    agent.call("removeServer", [{ id: server.id }]);
                   }}
                   className={"btn btn-warning"}
                   type="button"

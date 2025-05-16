@@ -25,22 +25,9 @@ export class MyAgent extends AIChatAgent<Env, MCPClientState> {
   async onStart(): Promise<void> {
     this.mcp = new MCPClientManager("my-agent", "1.0.0");
 
-    const { id } = await this.mcp.connect("http://localhost:3001/sse");
-    const serverConnection = this.mcp.mcpConnections[id];
-
-    this.setState({
-      servers: {
-        [id]: {
-          state: serverConnection.connectionState,
-          url: serverConnection.url.toString(),
-          tools: serverConnection.tools,
-          id
-        }
-      },
-      prompts: this.mcp.listPrompts(),
-      resources: this.mcp.listResources(),
-      tools: this.mcp.listTools()
-    });
+    for (const server of Object.values(this.state.servers)) {
+      await this.addServer({ url: server.url });
+    }
   }
 
   async onChatMessage(onFinish: StreamTextOnFinishCallback<{}>) {
@@ -113,8 +100,37 @@ export class MyAgent extends AIChatAgent<Env, MCPClientState> {
 
   @callable({})
   async removeServer({ id }: { id: string }) {
+    const connection = this.mcp.mcpConnections[id];
+
+    await this.mcp.closeConnection(id);
+    delete this.mcp.mcpConnections[id];
+
+    const { [connection.url.toString()]: _, ...allOtherServers } =
+      this.state.servers;
+
     this.setState({
-      servers: {},
+      servers: allOtherServers,
+      prompts: this.mcp.listPrompts(),
+      resources: this.mcp.listResources(),
+      tools: this.mcp.listTools()
+    });
+  }
+
+  @callable({})
+  async addServer({ url }: { url: string }) {
+    const { id } = await this.mcp.connect(url);
+    const serverConnection = this.mcp.mcpConnections[id];
+
+    this.setState({
+      servers: {
+        ...this.state.servers,
+        [url]: {
+          state: serverConnection.connectionState,
+          url: serverConnection.url.toString(),
+          tools: serverConnection.tools,
+          id
+        }
+      },
       prompts: this.mcp.listPrompts(),
       resources: this.mcp.listResources(),
       tools: this.mcp.listTools()

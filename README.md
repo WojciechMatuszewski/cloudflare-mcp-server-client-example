@@ -81,3 +81,13 @@ pnpm run dev
       - The CSS styling that you have on the list and items might need to change since "top" and "bottom" directions are inverted.
 
 - I could not find any way to _disconnect_ from the MCP server via the MCP client.
+
+  - Update: I finally figured it out, but I'm unsure if what I'm doing is the "proper" way to do this.
+
+    - For some reason, the [`closeConnection`](https://github.com/cloudflare/agents/blob/main/packages/agents/src/mcp/client.ts#L230) method does not remove the server from the `mcpConnections` record.
+
+      - On the other hand, if you ever wish to re-connect to that server, keeping the data about the connection might come in handy
+
+- The `this.mcp.connect` and `this.addMcpServer` methods work differently.
+
+  - Perhaps it's because the first one is invoked on the "manager" class and the second comes from the "Agent" class?
