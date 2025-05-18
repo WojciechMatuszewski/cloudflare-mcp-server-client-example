@@ -3,11 +3,16 @@
   "ui": "tui",
   "tasks": {
     "client#dev": {
-      "with": ["server#dev"],
+      "with": ["authless-server#dev", "oauth-server#dev"],
       "persistent": true,
       "cache": false
     },
-    "server#dev": {
+    "authless-server#dev": {
+      "persistent": true,
+      "dependsOn": [],
+      "cache": false
+    },
+    "oauth-server#dev": {
       "persistent": true,
       "dependsOn": [],
       "cache": false

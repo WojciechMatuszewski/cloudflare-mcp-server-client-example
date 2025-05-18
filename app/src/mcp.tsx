@@ -11,8 +11,8 @@ export function Mcp({ sessionId }: { sessionId: string }) {
   });
 
   const agent = useAgent<MCPClientState>({
-    host: "http://localhost:3002",
-    agent: "my-agent",
+    host: import.meta.env.VITE_MCP_CLIENT_ADDRESS,
+    agent: "mcp-client",
     id: sessionId,
     onStateUpdate(state, _source) {
       setAgentState(state);

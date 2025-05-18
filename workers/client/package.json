@@ -1,9 +1,10 @@
 {
   "name": "client",
   "type": "module",
+  "main": "./src/client.ts",
   "scripts": {
     "typegen": "wrangler types",
-    "dev": "wrangler dev --port 3002 --inspector-port 9002"
+    "dev": "wrangler dev --port 3001 --inspector-port 9001"
   },
   "dependencies": {
     "@ai-sdk/openai": "1.3.22",

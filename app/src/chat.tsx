@@ -2,7 +2,8 @@ import type { Prompt, PromptMessage } from "@modelcontextprotocol/sdk/types.js";
 import { useAgentChat } from "agents/ai-react";
 import { useAgent } from "agents/react";
 import type { UIMessage } from "ai";
-import { useState, useId, Fragment } from "react";
+import { useState, useId, Fragment, useRef, useEffect } from "react";
+import { flushSync } from "react-dom";
 import type { MCPClientState, MCPClientRunPromptPayload } from "transport";
 import { z } from "zod";
 
@@ -17,8 +18,8 @@ export function Chat({ sessionId }: { sessionId: string }) {
   });
 
   const agent = useAgent<MCPClientState>({
-    host: "http://localhost:3002",
-    agent: "my-agent",
+    host: import.meta.env.VITE_MCP_CLIENT_ADDRESS,
+    agent: "mcp-client",
     id: sessionId,
     onStateUpdate(state, _source) {
       setAgentState(state);
@@ -145,13 +146,14 @@ function PromptsList({
   onRunPrompt: (params: MCPClientRunPromptPayload) => void;
 }) {
   const [currentPrompt, setCurrentPrompt] = useState<AgentPrompt | null>(null);
+  const dialogRef = useRef<HTMLDialogElement>(null);
 
   return (
     <Fragment>
       <ul className={"flex flex-row gap-2"}>
         {prompts.map((prompt) => {
           return (
-            <li>
+            <li key={prompt.name}>
               <button
                 className={"btn"}
                 onClick={() => {
@@ -163,17 +165,17 @@ function PromptsList({
                   }
 
                   setCurrentPrompt(prompt);
+                  dialogRef.current?.showModal();
                 }}
                 type="button"
               >
-                <span>{prompt.name}</span>
-                <span>{prompt.serverId}</span>
+                {prompt.name}
               </button>
             </li>
           );
         })}
       </ul>
-      <dialog className={"modal"} open={currentPrompt != null}>
+      <dialog className={"modal"} ref={dialogRef}>
         <div className={"modal-box"}>
           <form
             method={"dialog"}
@@ -194,6 +196,7 @@ function PromptsList({
               });
 
               setCurrentPrompt(null);
+              dialogRef.current?.close();
             }}
           >
             <fieldset>
@@ -203,8 +206,8 @@ function PromptsList({
                   const inputId = `${name}-${index}`;
 
                   return (
-                    <div key={inputId}>
-                      <label htmlFor={inputId} className={"label mb-2"}>
+                    <div key={inputId} className={"flex flex-col gap-2"}>
+                      <label htmlFor={inputId} className={"label"}>
                         {label}
                       </label>
                       <input
@@ -225,6 +228,7 @@ function PromptsList({
                 </button>
                 <button
                   onClick={() => {
+                    dialogRef.current?.close();
                     setCurrentPrompt(null);
                   }}
                   className={"btn btn-warning"}

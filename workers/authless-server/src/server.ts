@@ -7,9 +7,9 @@ type State = {
   counter: number;
 };
 
-export class MyMCP extends McpAgent<Env, State> {
+export class AuthlessMCPServer extends McpAgent<Env, State> {
   server = new McpServer({
-    name: "CounterServer",
+    name: "AuthlessServer",
     version: "1.0.0"
   });
 
@@ -98,11 +98,11 @@ export default {
     const url = new URL(request.url);
 
     if (url.pathname === "/mpc") {
-      return MyMCP.serve("/mcp").fetch(request, env, ctx);
+      return AuthlessMCPServer.serve("/mcp").fetch(request, env, ctx);
     }
 
     if (url.pathname === "/sse" || url.pathname === "/sse/message") {
-      return MyMCP.serveSSE("/sse").fetch(request, env, ctx);
+      return AuthlessMCPServer.serveSSE("/sse").fetch(request, env, ctx);
     }
 
     return new Response("Not found", { status: 404 });

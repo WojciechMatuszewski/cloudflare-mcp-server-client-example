@@ -1,6 +1,6 @@
 {
-  "$schema": "../../node_modules/wrangler/config-schema.json",
-  "name": "my-mcp-server",
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "authless-mcp-server",
   "main": "src/server.ts",
   "compatibility_date": "2025-03-10",
   "compatibility_flags": [
@@ -10,14 +10,14 @@
   "durable_objects": {
     "bindings": [
       {
-        "class_name": "MyMCP",
+        "class_name": "AuthlessMCPServer",
         "name": "MCP_OBJECT"
       }
     ]
   },
   "migrations": [
     {
-      "new_sqlite_classes": ["MyMCP"],
+      "new_sqlite_classes": ["AuthlessMCPServer"],
       "tag": "v1"
     }
   ],

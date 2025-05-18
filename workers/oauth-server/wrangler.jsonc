@@ -1,7 +1,7 @@
 {
   "$schema": "./node_modules/wrangler/config-schema.json",
-  "name": "mcp-client",
-  "main": "src/client.ts",
+  "name": "oauth-mcp-server",
+  "main": "src/server.ts",
   "compatibility_date": "2025-03-10",
   "compatibility_flags": [
     "nodejs_compat",
@@ -10,14 +10,14 @@
   "durable_objects": {
     "bindings": [
       {
-        "class_name": "McpClient",
-        "name": "McpClient"
+        "class_name": "OAuthMCPServer",
+        "name": "MCP_OBJECT"
       }
     ]
   },
   "migrations": [
     {
-      "new_sqlite_classes": ["McpClient"],
+      "new_sqlite_classes": ["OAuthMCPServer"],
       "tag": "v1"
     }
   ],

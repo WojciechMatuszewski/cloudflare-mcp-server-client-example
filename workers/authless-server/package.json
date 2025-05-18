@@ -1,9 +1,10 @@
 {
-  "name": "server",
+  "name": "authless-server",
   "type": "module",
+  "main": "./src/server.ts",
   "scripts": {
     "typegen": "wrangler types",
-    "dev": "wrangler dev --port 3001 --inspector-port 9001"
+    "dev": "wrangler dev --port 3002 --inspector-port 9002"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "1.11.0",

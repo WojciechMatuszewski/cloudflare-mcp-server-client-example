@@ -91,3 +91,9 @@ pnpm run dev
 - The `this.mcp.connect` and `this.addMcpServer` methods work differently.
 
   - Perhaps it's because the first one is invoked on the "manager" class and the second comes from the "Agent" class?
+
+- The **`agent` property you pass to `useAgent` hook is a _kebab-case_ value of the name of the Agent class exported in the server file**.
+
+  - I'm NOT a fan of this. Why not let me to configure this. So much magic...
+
+- Apparently, a [bug in Chrome](https://github.com/saadeghi/daisyui/issues/3440#issuecomment-2847662168), prevents the `modal` tag to function properly when used with the `modal` class from daisyui.

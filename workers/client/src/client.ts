@@ -12,7 +12,7 @@ import {
 
 import type { MCPClientRunPromptPayload, MCPClientState } from "transport";
 
-export class MyAgent extends AIChatAgent<Env, MCPClientState> {
+export class McpClient extends AIChatAgent<Env, MCPClientState> {
   initialState = {
     servers: {},
     tools: [],
@@ -23,7 +23,9 @@ export class MyAgent extends AIChatAgent<Env, MCPClientState> {
   provider = createOpenAI({ apiKey: this.env.OPENAPI_KEY });
 
   async onStart(): Promise<void> {
-    this.mcp = new MCPClientManager("my-agent", "1.0.0");
+    this.mcp = new MCPClientManager("mcp-client", "1.0.0");
+
+    console.log(this.name);
 
     for (const server of Object.values(this.state.servers)) {
       await this.addServer({ url: server.url });
@@ -141,8 +143,9 @@ export class MyAgent extends AIChatAgent<Env, MCPClientState> {
 export default {
   async fetch(request: Request, env: Env) {
     return (
-      (await routeAgentRequest(request, env, { cors: true })) ||
-      new Response("Not found", { status: 404 })
+      (await routeAgentRequest(request, env, {
+        cors: true
+      })) || new Response("Not found", { status: 404 })
     );
   }
 } satisfies ExportedHandler<Env>;
