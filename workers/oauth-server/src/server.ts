@@ -1,17 +1,18 @@
 import { McpAgent } from "agents/mcp";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
-import { setTimeout } from "timers/promises";
+import { Hono } from "hono";
+import { cors } from "hono/cors";
+import {
+  getStytchOAuthEndpointUrl,
+  stytchBearerTokenAuthMiddleware
+} from "./auth.js";
 
-type State = {};
-
-export class OAuthMCPServer extends McpAgent<Env, State> {
+export class OAuthMCPServer extends McpAgent<Env> {
   server = new McpServer({
     name: "OAuthMCPServer",
     version: "1.0.0"
   });
-
-  initialState: State = {};
 
   async init(): Promise<void> {
     this.server.prompt(
@@ -45,18 +46,26 @@ export class OAuthMCPServer extends McpAgent<Env, State> {
   }
 }
 
-export default {
-  async fetch(request: Request, env: Env, ctx: ExecutionContext) {
-    const url = new URL(request.url);
-
-    if (url.pathname === "/mpc") {
-      return OAuthMCPServer.serve("/mcp").fetch(request, env, ctx);
-    }
-
-    if (url.pathname === "/sse" || url.pathname === "/sse/message") {
-      return OAuthMCPServer.serveSSE("/sse").fetch(request, env, ctx);
-    }
-
-    return new Response("Not found", { status: 404 });
-  }
-};
+export default new Hono<{ Bindings: Env }>()
+  .use(cors())
+  .get("/.well-known/oauth-authorization-server", async (c) => {
+    const url = new URL(c.req.url);
+    return c.json({
+      issuer: c.env.STYTCH_PROJECT_ID,
+      // Link to the OAuth Authorization screen implemented within the React UI
+      authorization_endpoint: `${url.origin}/oauth/authorize`,
+      token_endpoint: getStytchOAuthEndpointUrl(c.env, "oauth2/token"),
+      registration_endpoint: getStytchOAuthEndpointUrl(
+        c.env,
+        "oauth2/register"
+      ),
+      scopes_supported: ["openid", "profile", "email", "offline_access"],
+      response_types_supported: ["code"],
+      response_modes_supported: ["query"],
+      grant_types_supported: ["authorization_code", "refresh_token"],
+      token_endpoint_auth_methods_supported: ["none"],
+      code_challenge_methods_supported: ["S256"]
+    });
+  })
+  .use("/sse/*", stytchBearerTokenAuthMiddleware)
+  .route("/sse", new Hono().mount("/", OAuthMCPServer.mount("/sse").fetch));

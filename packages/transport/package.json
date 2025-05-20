@@ -4,7 +4,7 @@
   "scripts": {},
   "dependencies": {
     "@tsconfig/strictest": "2.0.5",
-    "@modelcontextprotocol/sdk": "1.11.2",
+    "@modelcontextprotocol/sdk": "1.11.0",
     "agents": "0.0.84"
   },
   "devDependencies": {}

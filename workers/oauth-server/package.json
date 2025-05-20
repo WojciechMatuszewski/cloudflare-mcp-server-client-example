@@ -9,13 +9,15 @@
   "dependencies": {
     "@modelcontextprotocol/sdk": "1.11.0",
     "agents": "0.0.76",
+    "hono": "4.7.10",
+    "jose": "6.0.11",
     "zod": "3.24.4"
   },
   "devDependencies": {
+    "@cloudflare/workers-types": "4.20250520.0",
     "@modelcontextprotocol/inspector": "0.11.0",
-    "@cloudflare/workers-types": "4.20250504.0",
-    "wrangler": "4.14.1",
+    "@tsconfig/node23": "23.0.1",
     "@types/node": "22.15.11",
-    "@tsconfig/node23": "23.0.1"
+    "wrangler": "4.14.1"
   }
 }

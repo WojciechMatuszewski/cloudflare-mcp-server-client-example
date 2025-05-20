@@ -120,23 +120,40 @@ export class McpClient extends AIChatAgent<Env, MCPClientState> {
 
   @callable({})
   async addServer({ url }: { url: string }) {
-    const { id } = await this.mcp.connect(url);
-    const serverConnection = this.mcp.mcpConnections[id];
+    try {
+      const { id } = await this.mcp.connect(url);
+      const serverConnection = this.mcp.mcpConnections[id];
 
-    this.setState({
-      servers: {
-        ...this.state.servers,
-        [url]: {
-          state: serverConnection.connectionState,
-          url: serverConnection.url.toString(),
-          tools: serverConnection.tools,
-          id
-        }
-      },
-      prompts: this.mcp.listPrompts(),
-      resources: this.mcp.listResources(),
-      tools: this.mcp.listTools()
-    });
+      this.setState({
+        servers: {
+          ...this.state.servers,
+          [url]: {
+            state: serverConnection.connectionState,
+            url: serverConnection.url.toString(),
+            tools: serverConnection.tools,
+            id
+          }
+        },
+        prompts: this.mcp.listPrompts(),
+        resources: this.mcp.listResources(),
+        tools: this.mcp.listTools()
+      });
+    } catch (error) {
+      this.setState({
+        servers: {
+          ...this.state.servers,
+          [url]: {
+            state: "authenticating",
+            url: url.toString(),
+            tools: [],
+            id: ""
+          }
+        },
+        prompts: this.mcp.listPrompts(),
+        resources: this.mcp.listResources(),
+        tools: this.mcp.listTools()
+      });
+    }
   }
 }
 
