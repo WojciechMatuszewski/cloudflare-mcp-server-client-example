@@ -11,6 +11,11 @@ import {
 } from "ai";
 
 import type { MCPClientRunPromptPayload, MCPClientState } from "transport";
+import { z } from "zod";
+
+const UnauthorizedErrorSchema = z.object({
+  code: z.literal(401)
+});
 
 export class McpClient extends AIChatAgent<Env, MCPClientState> {
   initialState = {
@@ -24,8 +29,6 @@ export class McpClient extends AIChatAgent<Env, MCPClientState> {
 
   async onStart(): Promise<void> {
     this.mcp = new MCPClientManager("mcp-client", "1.0.0");
-
-    console.log(this.name);
 
     for (const server of Object.values(this.state.servers)) {
       await this.addServer({ url: server.url });
@@ -102,13 +105,29 @@ export class McpClient extends AIChatAgent<Env, MCPClientState> {
 
   @callable({})
   async removeServer({ id }: { id: string }) {
-    const connection = this.mcp.mcpConnections[id];
+    const serverToRemove = Object.values(this.state.servers).find((server) => {
+      return server.id === id;
+    });
+    if (!serverToRemove) {
+      return;
+    }
+
+    const { [serverToRemove.url.toString()]: _, ...allOtherServers } =
+      this.state.servers;
+
+    if (serverToRemove.state !== "ready") {
+      this.setState({
+        servers: allOtherServers,
+        prompts: this.mcp.listPrompts(),
+        resources: this.mcp.listResources(),
+        tools: this.mcp.listTools()
+      });
+
+      return;
+    }
 
     await this.mcp.closeConnection(id);
     delete this.mcp.mcpConnections[id];
-
-    const { [connection.url.toString()]: _, ...allOtherServers } =
-      this.state.servers;
 
     this.setState({
       servers: allOtherServers,
@@ -139,14 +158,19 @@ export class McpClient extends AIChatAgent<Env, MCPClientState> {
         tools: this.mcp.listTools()
       });
     } catch (error) {
+      const { success } = UnauthorizedErrorSchema.safeParse(error);
+      if (!success) {
+        return;
+      }
+
       this.setState({
         servers: {
           ...this.state.servers,
           [url]: {
-            state: "authenticating",
+            state: "needs-authorization",
             url: url.toString(),
             tools: [],
-            id: ""
+            id: crypto.randomUUID()
           }
         },
         prompts: this.mcp.listPrompts(),

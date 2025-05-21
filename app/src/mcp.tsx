@@ -1,6 +1,6 @@
 import { useAgent } from "agents/react";
-import { useId, useState } from "react";
-import type { MCPClientState, MCPServerState } from "transport";
+import { useEffect, useId, useState } from "react";
+import type { MCPClientState, MCPServer, MCPServerState } from "transport";
 
 export function Mcp({ sessionId }: { sessionId: string }) {
   const [agentState, setAgentState] = useState<MCPClientState>({
@@ -60,17 +60,11 @@ export function Mcp({ sessionId }: { sessionId: string }) {
                 className={"list-row bg-base-200 flex flex-col"}
                 key={server.url}
               >
-                <div className={"flex flex-row items-center gap-2"}>
-                  <span>{server.url}</span>
-                  <ServerStateIndicator state={server.state} />
+                <div className={"flex flex-row justify-between items-center"}>
+                  <ServerInfo url={server.url} state={server.state} />
+                  <AuthorizeButton state={server.state} url={server.url} />
                 </div>
-                <ul className={"flex flex-row gap-1"}>
-                  {server.tools.map((serverTool) => {
-                    return (
-                      <li className={"badge badge-md"}>{serverTool.name}</li>
-                    );
-                  })}
-                </ul>
+                <Tools tools={server.tools} />
                 <button
                   onClick={() => {
                     agent.call("removeServer", [{ id: server.id }]);
@@ -89,24 +83,54 @@ export function Mcp({ sessionId }: { sessionId: string }) {
   );
 }
 
-function ServerStateIndicator({ state }: { state: MCPServerState }) {
-  switch (state) {
-    case "authenticating": {
-      return <div className={"status status-info"} />;
-    }
-    case "connecting": {
-      return <div className={"status status-info"} />;
-    }
-    case "ready": {
-      return <div className={"status status-success"} />;
-    }
-    case "discovering": {
-      return <div className={"status status-info"} />;
-    }
-    case "failed": {
-      return <div className={"status status-error"} />;
-    }
+function AuthorizeButton({
+  url,
+  state
+}: {
+  url: string;
+  state: MCPServerState;
+}) {
+  const oauthDiscoveryURL = new URL(
+    "/.well-known/oauth-authorization-server",
+    url
+  );
+  if (state !== "needs-authorization") {
+    return null;
   }
 
-  throw new Error("Unknown status");
+  return <button className={"btn btn-sm btn-neutral"}>Authorize</button>;
+}
+
+function ServerInfo({ state, url }: { state: MCPServerState; url: string }) {
+  return (
+    <div className={"flex flex-row items-center gap-1"}>
+      <span>{url}</span>
+      <ServerStateIndicator state={state} />
+    </div>
+  );
+}
+
+function ServerStateIndicator({ state }: { state: MCPServerState }) {
+  switch (state) {
+    default: {
+      return <div className={"status status-lg status-success"} />;
+    }
+    case "needs-authorization": {
+      return <div className={"status status-lg status-warning"} />;
+    }
+  }
+}
+
+function Tools({ tools }: { tools: MCPServer["tools"] }) {
+  if (tools.length === 0) {
+    return null;
+  }
+
+  return (
+    <ul className={"flex flex-row gap-1"}>
+      {tools.map((serverTool) => {
+        return <li className={"badge badge-md"}>{serverTool.name}</li>;
+      })}
+    </ul>
+  );
 }

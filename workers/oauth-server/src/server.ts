@@ -52,7 +52,6 @@ export default new Hono<{ Bindings: Env }>()
     const url = new URL(c.req.url);
     return c.json({
       issuer: c.env.STYTCH_PROJECT_ID,
-      // Link to the OAuth Authorization screen implemented within the React UI
       authorization_endpoint: `${url.origin}/oauth/authorize`,
       token_endpoint: getStytchOAuthEndpointUrl(c.env, "oauth2/token"),
       registration_endpoint: getStytchOAuthEndpointUrl(

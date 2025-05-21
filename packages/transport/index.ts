@@ -3,10 +3,14 @@ import type {
   Resource,
   Tool
 } from "@modelcontextprotocol/sdk/types.js";
-import type { MCPClientManager } from "agents/dist/mcp/client";
 
 export type MCPServerState =
-  MCPClientManager["mcpConnections"][number]["connectionState"];
+  | "authenticating"
+  | "connecting"
+  | "ready"
+  | "discovering"
+  | "failed"
+  | "needs-authorization";
 
 export type MCPServer = {
   url: string;
