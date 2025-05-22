@@ -1,0 +1,10 @@
+{
+  "extends": ["@tsconfig/vite-react/tsconfig.json"],
+  "compilerOptions": {
+    "composite": true,
+    "lib": ["es2024", "DOM", "DOM.Iterable"],
+    "target": "ESNext",
+    "noEmit": false,
+    "allowImportingTsExtensions": false
+  }
+}

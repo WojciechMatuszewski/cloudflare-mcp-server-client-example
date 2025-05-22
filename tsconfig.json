@@ -1,12 +1,11 @@
 {
   "compilerOptions": {},
   "references": [
+    { "path": "./workers/authless-server/tsconfig.json" },
+    { "path": "./workers/oauth-server/tsconfig.json" },
     { "path": "./workers/client/tsconfig.json" },
-    { "path": "./workers/server/tsconfig.json" },
     { "path": "./app/tsconfig.json" },
-    {
-      "path": "./packages/transport"
-    }
+    { "path": "./packages/transport" }
   ],
   "include": []
 }

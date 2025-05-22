@@ -1,12 +1,15 @@
 {
   "$schema": "./node_modules/wrangler/config-schema.json",
   "name": "oauth-mcp-server",
-  "main": "src/server.ts",
+  "main": "server/server.ts",
   "compatibility_date": "2025-03-10",
   "compatibility_flags": [
     "nodejs_compat",
     "nodejs_compat_populate_process_env"
   ],
+  "dev": {
+    "port": 3003
+  },
   "durable_objects": {
     "bindings": [
       {
@@ -23,5 +26,10 @@
   ],
   "observability": {
     "enabled": true
+  },
+  "assets": {
+    "run_worker_first": true,
+    "not_found_handling": "single-page-application",
+    "binding": "ASSETS"
   }
 }
