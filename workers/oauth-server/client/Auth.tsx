@@ -22,6 +22,7 @@ export const withLoginRequired = (Component: React.FC) => () => {
   const { user, fromCache } = useStytchUser();
 
   useEffect(() => {
+    console.log("im here!");
     if (!user && !fromCache) {
       localStorage.setItem("returnTo", window.location.href);
       window.location.href = "/login";
@@ -57,6 +58,7 @@ const onLoginComplete = () => {
  * View all configuration options at https://stytch.com/docs/sdks/ui-configuration
  */
 export function Login() {
+  console.log("im here!");
   const loginConfig = useMemo<StytchLoginConfig>(
     () => ({
       products: [Products.otp, Products.oauth],

@@ -162,21 +162,22 @@ export class McpClient extends AIChatAgent<Env, MCPClientState> {
       if (!success) {
         return;
       }
+      return { state: "NEEDS_AUTHORIZATION" };
 
-      this.setState({
-        servers: {
-          ...this.state.servers,
-          [url]: {
-            state: "needs-authorization",
-            url: url.toString(),
-            tools: [],
-            id: crypto.randomUUID()
-          }
-        },
-        prompts: this.mcp.listPrompts(),
-        resources: this.mcp.listResources(),
-        tools: this.mcp.listTools()
-      });
+      // this.setState({
+      //   servers: {
+      //     ...this.state.servers,
+      //     [url]: {
+      //       state: "needs-authorization",
+      //       url: url.toString(),
+      //       tools: [],
+      //       id: crypto.randomUUID()
+      //     }
+      //   },
+      //   prompts: this.mcp.listPrompts(),
+      //   resources: this.mcp.listResources(),
+      //   tools: this.mcp.listTools()
+      // });
     }
   }
 }

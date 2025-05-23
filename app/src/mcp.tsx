@@ -1,6 +1,7 @@
 import { useAgent } from "agents/react";
-import { useEffect, useId, useState } from "react";
+import { useId, useState } from "react";
 import type { MCPClientState, MCPServer, MCPServerState } from "transport";
+import { authenticate } from "./auth";
 
 export function Mcp({ sessionId }: { sessionId: string }) {
   const [agentState, setAgentState] = useState<MCPClientState>({
@@ -26,11 +27,15 @@ export function Mcp({ sessionId }: { sessionId: string }) {
     <article>
       <section>
         <form
-          onSubmit={(event) => {
+          onSubmit={async (event) => {
             event.preventDefault();
             const formData = new FormData(event.currentTarget);
             const payload = Object.fromEntries(formData.entries());
-            agent.call("addServer", [payload]);
+
+            const response = await agent.call("addServer", [payload]);
+            if (response.state === "NEEDS_AUTHORIZATION") {
+              await authenticate({ serverUrl: payload.url });
+            }
           }}
         >
           <fieldset>
