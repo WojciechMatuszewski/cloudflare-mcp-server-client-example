@@ -4,7 +4,7 @@ import type {
   Tool
 } from "@modelcontextprotocol/sdk/types.js";
 
-export type MCPServerState =
+export type MCPServerStatus =
   | "authenticating"
   | "connecting"
   | "ready"
@@ -14,7 +14,7 @@ export type MCPServerState =
 
 export type MCPServer = {
   url: string;
-  state: MCPServerState;
+  status: MCPServerStatus;
   tools: Tool[];
   id: string;
 };

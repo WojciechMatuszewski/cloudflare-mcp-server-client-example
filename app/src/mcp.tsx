@@ -1,27 +1,32 @@
+import type { MCPServersState } from "agents";
 import { useAgent } from "agents/react";
 import { useId, useState } from "react";
-import type { MCPClientState, MCPServer, MCPServerState } from "transport";
-import { authenticate } from "./auth";
+import type { MCPServerStatus } from "transport";
 
 export function Mcp({ sessionId }: { sessionId: string }) {
-  const [agentState, setAgentState] = useState<MCPClientState>({
+  const [mcpState, setMcpState] = useState<MCPServersState>({
     prompts: [],
     resources: [],
     servers: {},
     tools: []
   });
 
-  const agent = useAgent<MCPClientState>({
+  console.log(mcpState);
+
+  const agent = useAgent({
     host: import.meta.env.VITE_MCP_CLIENT_ADDRESS,
     agent: "mcp-client",
     id: sessionId,
-    onStateUpdate(state, _source) {
-      setAgentState(state);
+    onOpen(event) {
+      console.log("connected!", event);
+    },
+    onMcpUpdate: (state) => {
+      setMcpState(state);
     }
   });
 
   const serverUrlInputId = useId();
-  const serversList = Object.values(agentState.servers);
+  const serversList = Object.values(mcpState.servers);
 
   return (
     <article>
@@ -31,11 +36,7 @@ export function Mcp({ sessionId }: { sessionId: string }) {
             event.preventDefault();
             const formData = new FormData(event.currentTarget);
             const payload = Object.fromEntries(formData.entries());
-
-            const response = await agent.call("addServer", [payload]);
-            if (response.state === "NEEDS_AUTHORIZATION") {
-              await authenticate({ serverUrl: payload.url });
-            }
+            await agent.call("addServer", [payload]);
           }}
         >
           <fieldset>
@@ -49,6 +50,7 @@ export function Mcp({ sessionId }: { sessionId: string }) {
                 name={"url"}
                 required={true}
                 id={serverUrlInputId}
+                defaultValue={"http://localhost:3003/sse"}
               />
             </div>
             <button className={"btn mt-4"} type="submit">
@@ -63,16 +65,18 @@ export function Mcp({ sessionId }: { sessionId: string }) {
             return (
               <li
                 className={"list-row bg-base-200 flex flex-col"}
-                key={server.url}
+                key={server.server_url}
               >
                 <div className={"flex flex-row justify-between items-center"}>
-                  <ServerInfo url={server.url} state={server.state} />
-                  <AuthorizeButton state={server.state} url={server.url} />
+                  <ServerInfo url={server.server_url} state={server.state} />
+                  {server.auth_url ? (
+                    <AuthorizeButton authUrl={server.auth_url} />
+                  ) : null}
                 </div>
-                <Tools tools={server.tools} />
+                <Tools tools={[]} />
                 <button
                   onClick={() => {
-                    agent.call("removeServer", [{ id: server.id }]);
+                    agent.call("removeServer", [{ id: server.server_url }]);
                   }}
                   className={"btn btn-warning"}
                   type="button"
@@ -88,25 +92,20 @@ export function Mcp({ sessionId }: { sessionId: string }) {
   );
 }
 
-function AuthorizeButton({
-  url,
-  state
-}: {
-  url: string;
-  state: MCPServerState;
-}) {
-  const oauthDiscoveryURL = new URL(
-    "/.well-known/oauth-authorization-server",
-    url
+function AuthorizeButton({ authUrl }: { authUrl: string }) {
+  return (
+    <button
+      className={"btn btn-sm btn-neutral"}
+      onClick={() => {
+        window.location.href = authUrl;
+      }}
+    >
+      Authorize
+    </button>
   );
-  if (state !== "needs-authorization") {
-    return null;
-  }
-
-  return <button className={"btn btn-sm btn-neutral"}>Authorize</button>;
 }
 
-function ServerInfo({ state, url }: { state: MCPServerState; url: string }) {
+function ServerInfo({ state, url }: { state: MCPServerStatus; url: string }) {
   return (
     <div className={"flex flex-row items-center gap-1"}>
       <span>{url}</span>
@@ -115,7 +114,7 @@ function ServerInfo({ state, url }: { state: MCPServerState; url: string }) {
   );
 }
 
-function ServerStateIndicator({ state }: { state: MCPServerState }) {
+function ServerStateIndicator({ state }: { state: MCPServerStatus }) {
   switch (state) {
     default: {
       return <div className={"status status-lg status-success"} />;
@@ -126,7 +125,7 @@ function ServerStateIndicator({ state }: { state: MCPServerState }) {
   }
 }
 
-function Tools({ tools }: { tools: MCPServer["tools"] }) {
+function Tools({ tools }: { tools: MCPServersState["tools"] }) {
   if (tools.length === 0) {
     return null;
   }

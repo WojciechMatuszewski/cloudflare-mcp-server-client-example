@@ -18,6 +18,12 @@
       }
     ]
   },
+  "kv_namespaces": [
+    {
+      "binding": "OAUTH_KV",
+      "id": "my-namespace"
+    }
+  ],
   "migrations": [
     {
       "new_sqlite_classes": ["OAuthMCPServer"],

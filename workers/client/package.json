@@ -9,7 +9,7 @@
   "dependencies": {
     "@ai-sdk/openai": "1.3.22",
     "@modelcontextprotocol/sdk": "1.11.0",
-    "agents": "0.0.84",
+    "agents": "0.0.93",
     "ai": "4.3.15",
     "zod": "3.24.4"
   },

@@ -10,7 +10,7 @@ import {
   type StreamTextOnFinishCallback
 } from "ai";
 
-import type { MCPClientRunPromptPayload, MCPClientState } from "transport";
+import type { MCPClientState } from "transport";
 import { z } from "zod";
 
 const UnauthorizedErrorSchema = z.object({
@@ -18,22 +18,9 @@ const UnauthorizedErrorSchema = z.object({
 });
 
 export class McpClient extends AIChatAgent<Env, MCPClientState> {
-  initialState = {
-    servers: {},
-    tools: [],
-    prompts: [],
-    resources: []
-  };
-
   provider = createOpenAI({ apiKey: this.env.OPENAPI_KEY });
 
-  async onStart(): Promise<void> {
-    this.mcp = new MCPClientManager("mcp-client", "1.0.0");
-
-    for (const server of Object.values(this.state.servers)) {
-      await this.addServer({ url: server.url });
-    }
-  }
+  mcp = new MCPClientManager("mcp-client", "1.0.0");
 
   async onChatMessage(onFinish: StreamTextOnFinishCallback<{}>) {
     const dataStreamResponse = createDataStreamResponse({
@@ -89,19 +76,23 @@ export class McpClient extends AIChatAgent<Env, MCPClientState> {
     return dataStreamResponse;
   }
 
-  @callable({})
-  async runPrompt(payload: MCPClientRunPromptPayload) {
-    const { messages } = await this.mcp.getPrompt(
-      {
-        name: payload.name,
-        serverId: payload.serverId,
-        arguments: payload.arguments
-      },
-      {}
-    );
-
-    return messages;
+  async onRequest(request: Request): Promise<Response> {
+    return new Response("Not found", { status: 404 });
   }
+
+  // @callable({})
+  // async runPrompt(payload: MCPClientRunPromptPayload) {
+  //   const { messages } = await this.mcp.getPrompt(
+  //     {
+  //       name: payload.name,
+  //       serverId: payload.serverId,
+  //       arguments: payload.arguments
+  //     },
+  //     {}
+  //   );
+
+  //   return messages;
+  // }
 
   @callable({})
   async removeServer({ id }: { id: string }) {
@@ -115,7 +106,7 @@ export class McpClient extends AIChatAgent<Env, MCPClientState> {
     const { [serverToRemove.url.toString()]: _, ...allOtherServers } =
       this.state.servers;
 
-    if (serverToRemove.state !== "ready") {
+    if (serverToRemove.status !== "ready") {
       this.setState({
         servers: allOtherServers,
         prompts: this.mcp.listPrompts(),
@@ -139,46 +130,7 @@ export class McpClient extends AIChatAgent<Env, MCPClientState> {
 
   @callable({})
   async addServer({ url }: { url: string }) {
-    try {
-      const { id } = await this.mcp.connect(url);
-      const serverConnection = this.mcp.mcpConnections[id];
-
-      this.setState({
-        servers: {
-          ...this.state.servers,
-          [url]: {
-            state: serverConnection.connectionState,
-            url: serverConnection.url.toString(),
-            tools: serverConnection.tools,
-            id
-          }
-        },
-        prompts: this.mcp.listPrompts(),
-        resources: this.mcp.listResources(),
-        tools: this.mcp.listTools()
-      });
-    } catch (error) {
-      const { success } = UnauthorizedErrorSchema.safeParse(error);
-      if (!success) {
-        return;
-      }
-      return { state: "NEEDS_AUTHORIZATION" };
-
-      // this.setState({
-      //   servers: {
-      //     ...this.state.servers,
-      //     [url]: {
-      //       state: "needs-authorization",
-      //       url: url.toString(),
-      //       tools: [],
-      //       id: crypto.randomUUID()
-      //     }
-      //   },
-      //   prompts: this.mcp.listPrompts(),
-      //   resources: this.mcp.listResources(),
-      //   tools: this.mcp.listTools()
-      // });
-    }
+    await this.addMcpServer(url, url, "http://localhost:3001");
   }
 }
 

@@ -1,12 +1,30 @@
 import { useEffect } from "react";
 import { authenticate, SESSION_KEYS } from "./auth";
+import { useNavigate } from "react-router";
+import { useAgent } from "agents/react";
+import type { MCPClientState } from "transport";
 
-export function OAuthCallback() {
+export function OAuthCallback({ sessionId }: { sessionId: string }) {
+  const agent = useAgent<MCPClientState>({
+    host: import.meta.env.VITE_MCP_CLIENT_ADDRESS,
+    agent: "mcp-client",
+    id: sessionId
+  });
+
+  const navigate = useNavigate();
+
   useEffect(() => {
-    void handleCallback().then(() => {
-      window.history.replaceState({}, document.title, "/mcp");
-    });
-  }, []);
+    async function processCallback() {
+      const serverUrl = await handleCallback();
+      const addServerResponse = await agent.call("addServer", [
+        { url: serverUrl }
+      ]);
+      console.log({ addServerResponse });
+      navigate("/mcp", { replace: true });
+    }
+
+    void processCallback();
+  }, [navigate]);
 
   return <div>working...</div>;
 }
@@ -24,4 +42,6 @@ async function handleCallback() {
   }
 
   await authenticate({ serverUrl, code });
+
+  return serverUrl;
 }
