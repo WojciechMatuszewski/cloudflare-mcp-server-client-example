@@ -67,6 +67,6 @@ export default new Hono<{ Bindings: Env }>()
       code_challenge_methods_supported: ["S256"]
     });
   })
-  .use("/sse/*", stytchBearerTokenAuthMiddleware)
-  .route("/sse", new Hono().mount("/", OAuthMCPServer.mount("/sse").fetch))
+  .use("/mcp/*", stytchBearerTokenAuthMiddleware)
+  .route("/mcp", new Hono().mount("/", OAuthMCPServer.mount("/sse").fetch))
   .mount("/", (req, env) => env.ASSETS.fetch(req));

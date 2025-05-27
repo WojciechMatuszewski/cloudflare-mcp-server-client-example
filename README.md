@@ -109,3 +109,5 @@ pnpm run dev
   - All is good, but the library lacks documentation. The "implicitness" of the `mcpState` is quite concerning to me.
 
     - I mean, I like that the library handles that end-to-end, but when you look [at the example](https://github.com/cloudflare/agents/tree/main/examples/mcp-client), you might need to spend some time figuring out _how_ that state is updates and that library manages those updates!
+
+- The OAuth discovery implemented in the `modelcontextprotocol` library _might_ be incompatible with the _StreamableHTTP_ protocol. To be investigated.
