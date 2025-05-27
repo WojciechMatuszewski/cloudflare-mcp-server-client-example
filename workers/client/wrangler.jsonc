@@ -7,6 +7,9 @@
     "nodejs_compat",
     "nodejs_compat_populate_process_env"
   ],
+  "vars": {
+    "CLIENT_SERVER_ADDRESS": "<DEPLOYED_HOSTNAME>"
+  },
   "durable_objects": {
     "bindings": [
       {

@@ -10,7 +10,7 @@ import {
   type StreamTextOnFinishCallback
 } from "ai";
 
-import type { MCPClientState } from "transport";
+import type { MCPClientRunPromptPayload, MCPClientState } from "transport";
 import { z } from "zod";
 
 const UnauthorizedErrorSchema = z.object({
@@ -33,7 +33,7 @@ export class McpClient extends AIChatAgent<Env, MCPClientState> {
               properties: mcpTool.inputSchema.properties ?? {},
               additionalProperties: false
             }),
-            execute: async (params, options) => {
+            execute: async (params) => {
               dataStream.writeMessageAnnotation({
                 type: "status",
                 value: "processing"
@@ -76,61 +76,32 @@ export class McpClient extends AIChatAgent<Env, MCPClientState> {
     return dataStreamResponse;
   }
 
-  async onRequest(request: Request): Promise<Response> {
-    return new Response("Not found", { status: 404 });
+  @callable({})
+  async runPrompt({
+    name,
+    serverId,
+    arguments: args
+  }: MCPClientRunPromptPayload) {
+    const { messages } = await this.mcp.getPrompt(
+      {
+        name,
+        serverId,
+        arguments: args
+      },
+      {}
+    );
+
+    return messages;
   }
-
-  // @callable({})
-  // async runPrompt(payload: MCPClientRunPromptPayload) {
-  //   const { messages } = await this.mcp.getPrompt(
-  //     {
-  //       name: payload.name,
-  //       serverId: payload.serverId,
-  //       arguments: payload.arguments
-  //     },
-  //     {}
-  //   );
-
-  //   return messages;
-  // }
 
   @callable({})
   async removeServer({ id }: { id: string }) {
-    const serverToRemove = Object.values(this.state.servers).find((server) => {
-      return server.id === id;
-    });
-    if (!serverToRemove) {
-      return;
-    }
-
-    const { [serverToRemove.url.toString()]: _, ...allOtherServers } =
-      this.state.servers;
-
-    if (serverToRemove.status !== "ready") {
-      this.setState({
-        servers: allOtherServers,
-        prompts: this.mcp.listPrompts(),
-        resources: this.mcp.listResources(),
-        tools: this.mcp.listTools()
-      });
-
-      return;
-    }
-
-    await this.mcp.closeConnection(id);
-    delete this.mcp.mcpConnections[id];
-
-    this.setState({
-      servers: allOtherServers,
-      prompts: this.mcp.listPrompts(),
-      resources: this.mcp.listResources(),
-      tools: this.mcp.listTools()
-    });
+    await this.removeMcpServer(id);
   }
 
   @callable({})
   async addServer({ url }: { url: string }) {
-    await this.addMcpServer(url, url, "http://localhost:3001");
+    await this.addMcpServer(url, url, this.env.CLIENT_SERVER_ADDRESS);
   }
 }
 

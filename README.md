@@ -6,15 +6,15 @@ Cloudflare has great SDKs for running AI Agents. Since I had no idea how they wo
 
 - Install [wrangler-cli](https://developers.cloudflare.com/workers/wrangler/install-and-update/).
 
-- Create `.dev.vars` file in the `workers/client` directory.
-
-- Add `OPENAPI_KEY` to the `.dev.vars` file.
-
 - Install dependencies
 
 ```bash
 pnpm i
 ```
+
+- Make sure to populate all the `.env` and `.dev.env` files with values.
+
+  - See the `.env.example` and `.dev.env.example` files.
 
 - Run the application
 
@@ -24,7 +24,13 @@ pnpm run dev
 
 - Open the application in your browser: `http://localhost:3000`
 
-## Learning
+## Playing around
+
+- Try adding the MCP server that sits behind Stytch OAuth authorization (`http://localhost:3003/sse`).
+- Try adding the "authless" MCP server (`http://localhost:3002/sse`).
+- Try running prompts.
+
+## Learnings
 
 - The `McpAgent` automatically handles state via _durable objects_.
 
@@ -97,3 +103,9 @@ pnpm run dev
   - I'm NOT a fan of this. Why not let me to configure this. So much magic...
 
 - Apparently, a [bug in Chrome](https://github.com/saadeghi/daisyui/issues/3440#issuecomment-2847662168), prevents the `modal` tag to function properly when used with the `modal` class from daisyui.
+
+- I _struggled_ a lot to wrap my head around how the OAuth flow works. Luckily, the `agents` library now implements the whole flow end-to-end!
+
+  - All is good, but the library lacks documentation. The "implicitness" of the `mcpState` is quite concerning to me.
+
+    - I mean, I like that the library handles that end-to-end, but when you look [at the example](https://github.com/cloudflare/agents/tree/main/examples/mcp-client), you might need to spend some time figuring out _how_ that state is updates and that library manages those updates!

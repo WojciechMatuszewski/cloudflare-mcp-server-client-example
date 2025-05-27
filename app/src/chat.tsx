@@ -1,28 +1,29 @@
-import type { Prompt, PromptMessage } from "@modelcontextprotocol/sdk/types.js";
+import type { PromptMessage } from "@modelcontextprotocol/sdk/types.js";
+import type { MCPServersState } from "agents";
 import { useAgentChat } from "agents/ai-react";
 import { useAgent } from "agents/react";
 import type { UIMessage } from "ai";
-import { useState, useId, Fragment, useRef, useEffect } from "react";
-import { flushSync } from "react-dom";
-import type { MCPClientState, MCPClientRunPromptPayload } from "transport";
+import { Fragment, useId, useRef, useState } from "react";
+import type { MCPClientRunPromptPayload } from "transport";
 import { z } from "zod";
 
-type AgentPrompt = Prompt & { serverId: string };
+type Prompt = MCPServersState["prompts"][number] & { serverId: string };
 
 export function Chat({ sessionId }: { sessionId: string }) {
-  const [agentState, setAgentState] = useState<MCPClientState>({
+  const [mcpState, setMcpState] = useState<MCPServersState>({
     prompts: [],
     resources: [],
     servers: {},
     tools: []
   });
 
-  const agent = useAgent<MCPClientState>({
+  const agent = useAgent({
     host: import.meta.env.VITE_MCP_CLIENT_ADDRESS,
     agent: "mcp-client",
     id: sessionId,
-    onStateUpdate(state, _source) {
-      setAgentState(state);
+    onMcpUpdate(state) {
+      console.log(state);
+      setMcpState(state);
     }
   });
 
@@ -86,7 +87,7 @@ export function Chat({ sessionId }: { sessionId: string }) {
         <h2 className={"mb-2"}>Available prompts</h2>
         <PromptsList
           onRunPrompt={handleRunPrompt}
-          prompts={agentState.prompts}
+          prompts={mcpState.prompts as Array<Prompt>}
         />
       </section>
 
@@ -142,10 +143,10 @@ function PromptsList({
   prompts,
   onRunPrompt
 }: {
-  prompts: AgentPrompt[];
+  prompts: Array<Prompt>;
   onRunPrompt: (params: MCPClientRunPromptPayload) => void;
 }) {
-  const [currentPrompt, setCurrentPrompt] = useState<AgentPrompt | null>(null);
+  const [currentPrompt, setCurrentPrompt] = useState<Prompt | null>(null);
   const dialogRef = useRef<HTMLDialogElement>(null);
 
   return (

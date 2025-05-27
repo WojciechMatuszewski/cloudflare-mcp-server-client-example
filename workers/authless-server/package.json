@@ -4,18 +4,19 @@
   "main": "./src/server.ts",
   "scripts": {
     "typegen": "wrangler types",
-    "dev": "wrangler dev --port 3002 --inspector-port 9002"
+    "dev": "wrangler dev --port 3002 --inspector-port 9002",
+    "clean": "rm -rf ./.wrangler"
   },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "1.11.0",
+    "@modelcontextprotocol/sdk": "1.12.0",
     "agents": "0.0.93",
-    "zod": "3.24.4"
+    "zod": "3.25.30"
   },
   "devDependencies": {
-    "@modelcontextprotocol/inspector": "0.12.0",
-    "@cloudflare/workers-types": "4.20250520.0",
-    "wrangler": "4.14.1",
-    "@types/node": "22.15.11",
-    "@tsconfig/node23": "23.0.1"
+    "@modelcontextprotocol/inspector": "0.13.0",
+    "@cloudflare/workers-types": "4.20250525.0",
+    "wrangler": "4.16.1",
+    "@types/node": "22.15.21",
+    "@tsconfig/node23": "23.0.2"
   }
 }

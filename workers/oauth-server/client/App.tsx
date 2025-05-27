@@ -5,9 +5,7 @@ import { createRoot } from "react-dom/client";
 import { Route, BrowserRouter as Router, Routes } from "react-router-dom";
 import { Authenticate, Authorize, Login } from "./Auth";
 
-const stytch = new StytchUIClient(
-  import.meta.env.VITE_STYTCH_PUBLIC_TOKEN ?? ""
-);
+const stytch = new StytchUIClient(import.meta.env.VITE_STYTCH_PUBLIC_TOKEN);
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>

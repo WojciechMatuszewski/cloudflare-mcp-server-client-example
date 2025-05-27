@@ -1,4 +1,4 @@
-import type { MCPServersState } from "agents";
+import type { MCPServer, MCPServersState } from "agents";
 import { useAgent } from "agents/react";
 import { useId, useState } from "react";
 import type { MCPServerStatus } from "transport";
@@ -10,8 +10,6 @@ export function Mcp({ sessionId }: { sessionId: string }) {
     servers: {},
     tools: []
   });
-
-  console.log(mcpState);
 
   const agent = useAgent({
     host: import.meta.env.VITE_MCP_CLIENT_ADDRESS,
@@ -26,7 +24,15 @@ export function Mcp({ sessionId }: { sessionId: string }) {
   });
 
   const serverUrlInputId = useId();
-  const serversList = Object.values(mcpState.servers);
+
+  const serversList = Object.entries(mcpState.servers).map(
+    ([serverId, serverInfo]) => {
+      return {
+        ...serverInfo,
+        id: serverId
+      };
+    }
+  );
 
   return (
     <article>
@@ -62,28 +68,22 @@ export function Mcp({ sessionId }: { sessionId: string }) {
       <section>
         <ul className={"list flex flex-col gap-2 mt-4"}>
           {serversList.map((server) => {
+            const toolsForServer = mcpState.tools.filter((tool) => {
+              return tool.serverId === server.id;
+            });
+
             return (
-              <li
-                className={"list-row bg-base-200 flex flex-col"}
-                key={server.server_url}
-              >
-                <div className={"flex flex-row justify-between items-center"}>
-                  <ServerInfo url={server.server_url} state={server.state} />
-                  {server.auth_url ? (
-                    <AuthorizeButton authUrl={server.auth_url} />
-                  ) : null}
-                </div>
-                <Tools tools={[]} />
-                <button
-                  onClick={() => {
-                    agent.call("removeServer", [{ id: server.server_url }]);
-                  }}
-                  className={"btn btn-warning"}
-                  type="button"
-                >
-                  Remove
-                </button>
-              </li>
+              <ServerListItem
+                key={server.id}
+                serverUrl={server.server_url}
+                serverState={server.state}
+                serverAuthUrl={server.auth_url}
+                serverId={server.id}
+                onRemoveServer={() => {
+                  agent.call("removeServer", [{ id: server.id }]);
+                }}
+                tools={toolsForServer}
+              />
             );
           })}
         </ul>
@@ -92,12 +92,61 @@ export function Mcp({ sessionId }: { sessionId: string }) {
   );
 }
 
+function ServerListItem({
+  serverUrl,
+  serverState,
+  serverAuthUrl,
+  onRemoveServer,
+  tools
+}: {
+  serverUrl: MCPServer["server_url"];
+  serverState: MCPServer["state"];
+  serverAuthUrl: string | null;
+  serverId: string;
+  onRemoveServer: VoidFunction;
+  tools: MCPServersState["tools"];
+}) {
+  const displayAuthorizeButton =
+    serverState === "authenticating" && serverAuthUrl != null;
+
+  return (
+    <li className={"list-row bg-base-200 flex flex-col"} key={serverUrl}>
+      <div className={"flex flex-row justify-between items-center"}>
+        <ServerInfo url={serverUrl} state={serverState} />
+        {displayAuthorizeButton ? (
+          <AuthorizeButton authUrl={serverAuthUrl} />
+        ) : null}
+      </div>
+
+      <Tools tools={tools} />
+
+      <button
+        onClick={() => {
+          onRemoveServer();
+        }}
+        className={"btn btn-warning"}
+        type="button"
+      >
+        Remove
+      </button>
+    </li>
+  );
+}
+
 function AuthorizeButton({ authUrl }: { authUrl: string }) {
+  /**
+   * We have to use an external window popup here, otherwise the whole flow won't work.
+   * See https://github.com/cloudflare/agents/commit/25aeaf24692bb82601c5df9fdce215cf2c509711#diff-75013b5dc015c5b00a1bebcd93e7c62ac825fe7d590f7ce5e3176399986cd92fR404
+   */
   return (
     <button
       className={"btn btn-sm btn-neutral"}
       onClick={() => {
-        window.location.href = authUrl;
+        window.open(
+          authUrl,
+          "popupWindow",
+          "width=600,height=800,resizable=yes,scrollbars=yes,toolbar=yes,menubar=no,location=no,directories=no,status=yes"
+        );
       }}
     >
       Authorize
@@ -116,11 +165,11 @@ function ServerInfo({ state, url }: { state: MCPServerStatus; url: string }) {
 
 function ServerStateIndicator({ state }: { state: MCPServerStatus }) {
   switch (state) {
+    case "authenticating": {
+      return <div className={"status status-lg status-warning"} />;
+    }
     default: {
       return <div className={"status status-lg status-success"} />;
-    }
-    case "needs-authorization": {
-      return <div className={"status status-lg status-warning"} />;
     }
   }
 }
